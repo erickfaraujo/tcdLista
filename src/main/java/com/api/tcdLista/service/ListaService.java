@@ -112,18 +112,13 @@ public class ListaService {
 				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
 				conteudos = listaConteudoRepository.findByLista(lista);
 
-				ListaConteudo listaConteudo = new ListaConteudo();
-				listaConteudo.setIdLista(lista);
-				listaConteudo.setIdConteudo(idConteudo);
-				
 				for (ListaConteudo conteudo : conteudos) {
 					if (conteudo.getIdConteudo() == idConteudo) {
-						conteudos.remove(conteudo);
+						long idListaConteudo = conteudo.getIdListaConteudo();
+						listaConteudoRepository.deleteById(idListaConteudo);
 						break;
 					}
 				}
-
-				listaConteudoRepository.saveAll(conteudos);
 			}
 		}
 	}
