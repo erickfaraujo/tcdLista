@@ -16,6 +16,11 @@ public class TipoLista {
 	
 	@Column
 	private String desricao;
+	
+	
+	public TipoLista() {
+		super();
+	}
 
 	public int getId() {
 		return id;

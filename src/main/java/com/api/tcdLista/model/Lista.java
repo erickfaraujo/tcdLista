@@ -1,18 +1,20 @@
 package com.api.tcdLista.model;
 
-import java.util.Collection;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 @Entity
 public class Lista {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id_lista", nullable = false, updatable = false)
 	private Long id;
 
 	@Column
@@ -21,10 +23,6 @@ public class Lista {
 	@ManyToOne
 	@JoinColumn(name = "id_tipo_lista", nullable = false)
 	private TipoLista tipoLista;
-
-	@ManyToMany
-	@JoinColumn(name = "id_conteudo", nullable = false)
-	private Collection<Conteudo> conteudos;
 
 	public Long getId() {
 		return id;
@@ -48,14 +46,6 @@ public class Lista {
 
 	public void setTipoLista(TipoLista tipoLista) {
 		this.tipoLista = tipoLista;
-	}
-
-	public Collection<Conteudo> getConteudos() {
-		return conteudos;
-	}
-
-	public void setConteudos(Collection<Conteudo> conteudos) {
-		this.conteudos = conteudos;
 	}
 
 }
