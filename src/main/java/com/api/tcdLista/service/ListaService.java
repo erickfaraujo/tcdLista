@@ -21,76 +21,110 @@ public class ListaService {
 	@Autowired
 	private ListaConteudoRepository listaConteudoRepository;
 
-	public ListaConteudoDTO getListas(int userId) {
-		Collection<Lista> listas = listaRepository.findByUserId(userId);
+	public Collection<ListaConteudoDTO> getListas(int userId) {
+		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 
-		ListaConteudoDTO listaComConteudo = new ListaConteudoDTO();
-		//Collection<ListaConteudo> listaAux = new ArrayList<ListaConteudo>();
+		// Criação dos DTOs que receberão a lista de conteúdos e tipo da lista
+		ListaConteudoDTO listaMyList = new ListaConteudoDTO();
+		listaMyList.setTipoLista(1);
+		ListaConteudoDTO listaAssistidos = new ListaConteudoDTO();
+		listaAssistidos.setTipoLista(2);
+
+		// Criação da lista de conteúdos
 		Collection<Long> myList = new ArrayList<Long>();
 		Collection<Long> assistidos = new ArrayList<Long>();
-		for (Lista lista : listas) {
 
-			Collection<ListaConteudo> listaNova = new ArrayList<ListaConteudo>();
-			listaNova = listaConteudoRepository.findByLista(lista);
-			
-			
-			for (ListaConteudo listaConteudo : listaNova) {
-				if(lista.getTipoLista().getId() == 1) {
-					
+		// Criação da lista de retorno do serviço
+		Collection<ListaConteudoDTO> listaCompleta = new ArrayList<ListaConteudoDTO>();
+
+		for (Lista lista : userLists) {
+
+			// Busca o conteúdo de uma lista do usuário
+			Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+			conteudos = listaConteudoRepository.findByLista(lista);
+
+			for (ListaConteudo listaConteudo : conteudos) {
+				if (lista.getTipoLista().getId() == 1) {
 					myList.add(listaConteudo.getIdConteudo());
-					
-				} else if(lista.getTipoLista().getId() == 2) {
+
+				} else if (lista.getTipoLista().getId() == 2) {
 					assistidos.add(listaConteudo.getIdConteudo());
 				}
 			}
-			
-			listaComConteudo.setMyList(myList);
-			listaComConteudo.setAssistidos(assistidos);
+
+			listaMyList.setConteudos(myList);
+			listaAssistidos.setConteudos(assistidos);
 		}
 
-		return listaComConteudo;
+		listaCompleta.add(listaMyList);
+		listaCompleta.add(listaAssistidos);
 
+		return listaCompleta;
 	}
 
-	public ListaConteudo getListaByTipo(int userId, int tipoLista) {
-		
-		return null;
-//		Collection<ListaConteudo> listas = getListas(userId);
-//		ListaConteudo listaBuscada = null;
-//
-//		if (listas.isEmpty()) {
-//			// TODO Criar Exception específica
-//			throw new RuntimeException();
-//		} else {
-//			for (ListaConteudo item : listas) {
-//				if (item.getLista().getTipoLista().getId() == tipoLista) {
-//					listaBuscada = item;
-//
-//					return listaBuscada;
-//				}
-//			}
-//		}
-//		// TODO Criar Exception: User não possui lista do tipo solicitado
-//		throw new RuntimeException();
-	}
+	public ListaConteudoDTO getListaByTipo(int userId, int tipoLista) {
+		Collection<Lista> userLists = listaRepository.findByUserId(userId);
+		Collection<Long> listaConteudos = new ArrayList<Long>();
+		ListaConteudoDTO listaBuscada = new ListaConteudoDTO();
 
-	public void updateLista(int userId, int tipoLista, int idConteudo, int action) {
-		if (action == 1) {
-			// Lista lista = getListaByTipo(userId, tipoLista); //Pegando a lista que será
-			// alterada
-			// if (lista.)
-			// TODO Verificar se o idConteudo já está na idLista
-			// TODO Inserir o idConteudo e idLista na ListaConteudo
-			// TODO Gravar ListaConteudo no BD
-		} else if (action == 2) {
-			// TODO Encontrar o id da lista de acordo com userID e tipoLista
-			// TODO Verificar se o idConteudo existe na lista
-			// TODO Remover o idConteudo da tabela lista_conteudo
-
-		} else {
-			// TODO Criar Exception específica
-			throw new RuntimeException();
+		for (Lista lista : userLists) {
+			if (lista.getTipoLista().getId() == tipoLista) {
+				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+				conteudos = listaConteudoRepository.findByLista(lista);
+				for (ListaConteudo conteudo : conteudos) {
+					listaConteudos.add(conteudo.getIdConteudo());
+				}
+			}
 		}
 
+		listaBuscada.setTipoLista(tipoLista);
+		listaBuscada.setConteudos(listaConteudos);
+
+		return listaBuscada;
+	}
+
+	public void adicionaConteudo(int userId, int tipoLista, long idConteudo) {
+
+		Collection<Lista> userLists = listaRepository.findByUserId(userId);
+
+		for (Lista lista : userLists) {
+			if (lista.getTipoLista().getId() == tipoLista) {
+				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+				conteudos = listaConteudoRepository.findByLista(lista);
+
+				ListaConteudo listaConteudo = new ListaConteudo();
+				listaConteudo.setIdLista(lista);
+				listaConteudo.setIdConteudo(idConteudo);
+
+				conteudos.add(listaConteudo);
+
+				listaConteudoRepository.saveAll(conteudos);
+			}
+		}
+	}
+
+	public void removeConteudo(int userId, int tipoLista, long idConteudo) {
+
+		Collection<Lista> userLists = listaRepository.findByUserId(userId);
+
+		for (Lista lista : userLists) {
+			if (lista.getTipoLista().getId() == tipoLista) {
+				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+				conteudos = listaConteudoRepository.findByLista(lista);
+
+				ListaConteudo listaConteudo = new ListaConteudo();
+				listaConteudo.setIdLista(lista);
+				listaConteudo.setIdConteudo(idConteudo);
+				
+				for (ListaConteudo conteudo : conteudos) {
+					if (conteudo.getIdConteudo() == idConteudo) {
+						conteudos.remove(conteudo);
+						break;
+					}
+				}
+
+				listaConteudoRepository.saveAll(conteudos);
+			}
+		}
 	}
 }

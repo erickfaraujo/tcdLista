@@ -40,19 +40,25 @@ public class ListaController {
 
 	@ApiOperation(value = "Retorna todas as listas de um usuário")
 	@GetMapping(value = "{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ListaConteudoDTO getListas(@PathVariable("userId") int userId) {
+	public Collection<ListaConteudoDTO> getListas(@PathVariable("userId") int userId) {
 		return listaService.getListas(userId);
 	}
 
 	@ApiOperation(value = "Retorna uma lista de um tipo específico do usuário")
 	@GetMapping(value = "{userId}/{tipoLista}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ListaConteudo getListaByTipo(@PathVariable("userId") int userId, @PathVariable("tipoLista") int tipoLista) {
+	public ListaConteudoDTO getListaByTipo(@PathVariable("userId") int userId, @PathVariable("tipoLista") int tipoLista) {
 		return listaService.getListaByTipo(userId, tipoLista);
 	}
 	
 	@ApiOperation(value = "Adiciona um conteúdo em uma lista")
 	@RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void updateConteudo(int userId, int tipoLista, int idConteudo, int action) {
-		listaService.updateLista(userId, tipoLista, idConteudo, action);
+	public void adicionaConteudo(int userId, int tipoLista, long idConteudo) {
+		listaService.adicionaConteudo(userId, tipoLista, idConteudo);
+	}
+	
+	@ApiOperation(value = "Remove um conteúdo em uma lista")
+	@RequestMapping(value = "", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	public void removeConteudo(int userId, int tipoLista, long idConteudo) {
+		listaService.removeConteudo(userId, tipoLista, idConteudo);
 	}
 }

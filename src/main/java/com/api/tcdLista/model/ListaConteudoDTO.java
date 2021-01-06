@@ -4,23 +4,25 @@ import java.util.Collection;
 
 public class ListaConteudoDTO {
 
-	private Collection<Long> myList;
-	private Collection<Long> assistidos;
+	private int tipoLista;
+	private Collection<Long> conteudos;
+	//private Collection<Long> assistidos;
 
-	public Collection<Long> getMyList() {
-		return myList;
+	public Collection<Long> getConteudos() {
+		return conteudos;
 	}
 
-	public void setMyList(Collection<Long> myList) {
-		this.myList = myList;
+	public void setConteudos(Collection<Long> conteudos) {
+		this.conteudos = conteudos;
 	}
 
-	public Collection<Long> getAssistidos() {
-		return assistidos;
+	public int getTipoLista() {
+		return tipoLista;
 	}
 
-	public void setAssistidos(Collection<Long> assistidos) {
-		this.assistidos = assistidos;
+	public void setTipoLista(int tipoLista) {
+		this.tipoLista = tipoLista;
 	}
+
 
 }
