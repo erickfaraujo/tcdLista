@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.cloud.stream.messaging.Sink;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import com.api.tcdLista.model.Lista;
@@ -13,6 +17,7 @@ import com.api.tcdLista.repository.ListaConteudoRepository;
 import com.api.tcdLista.repository.ListaRepository;
 
 @Service
+@EnableBinding(Sink.class)
 public class ListaService {
 
 	@Autowired
@@ -83,7 +88,8 @@ public class ListaService {
 		return listaBuscada;
 	}
 
-	public void adicionaConteudo(int userId, int tipoLista, long idConteudo) {
+	//@StreamListener(target = Sink.INPUT)
+	public void adicionaConteudo(/*@Payload*/ int userId, /*@Payload*/ int tipoLista, /*@Payload*/ long idConteudo) {
 
 		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 
@@ -103,7 +109,8 @@ public class ListaService {
 		}
 	}
 
-	public void removeConteudo(int userId, int tipoLista, long idConteudo) {
+	//@StreamListener(target = Sink.INPUT)
+	public void removeConteudo(/*@Payload*/ int userId, /*@Payload*/ int tipoLista, /*@Payload*/ long idConteudo) {
 
 		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 
