@@ -96,14 +96,20 @@ public class ListaService {
 		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 
 		if (userLists.isEmpty()) {
-			Lista novaLista = new Lista();
-			TipoLista tipo = new TipoLista(tipoLista);
+			Lista novaLista1 = new Lista();
+			Lista novaLista2 = new Lista();
+			TipoLista tipo1 = new TipoLista(1);
+			TipoLista tipo2 = new TipoLista(2);
 
-			novaLista.setTipoLista(tipo);
-			novaLista.setUserId(userId);
+			novaLista1.setTipoLista(tipo1);
+			novaLista1.setUserId(userId);
+			novaLista2.setTipoLista(tipo2);
+			novaLista2.setUserId(userId);
 
-			listaRepository.save(novaLista);
-			userLists.add(novaLista);
+			listaRepository.save(novaLista1);
+			listaRepository.save(novaLista2);
+			userLists.add(novaLista1);
+			userLists.add(novaLista2);
 		}
 
 		for (Lista lista : userLists) {
