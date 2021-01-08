@@ -13,11 +13,12 @@ import org.springframework.stereotype.Service;
 import com.api.tcdLista.model.Lista;
 import com.api.tcdLista.model.ListaConteudo;
 import com.api.tcdLista.model.ListaConteudoDTO;
+import com.api.tcdLista.model.TipoLista;
 import com.api.tcdLista.repository.ListaConteudoRepository;
 import com.api.tcdLista.repository.ListaRepository;
 
 @Service
-@EnableBinding(Sink.class)
+//@EnableBinding(Sink.class)
 public class ListaService {
 
 	@Autowired
@@ -88,10 +89,22 @@ public class ListaService {
 		return listaBuscada;
 	}
 
-	//@StreamListener(target = Sink.INPUT)
-	public void adicionaConteudo(/*@Payload*/ int userId, /*@Payload*/ int tipoLista, /*@Payload*/ long idConteudo) {
+	// @StreamListener(target = Sink.INPUT)
+	public void adicionaConteudo(/* @Payload */ int userId, /* @Payload */ int tipoLista,
+			/* @Payload */ long idConteudo) {
 
 		Collection<Lista> userLists = listaRepository.findByUserId(userId);
+
+		if (userLists.isEmpty()) {
+			Lista novaLista = new Lista();
+			TipoLista tipo = new TipoLista(tipoLista);
+
+			novaLista.setTipoLista(tipo);
+			novaLista.setUserId(userId);
+
+			listaRepository.save(novaLista);
+			userLists.add(novaLista);
+		}
 
 		for (Lista lista : userLists) {
 			if (lista.getTipoLista().getId() == tipoLista) {
@@ -109,8 +122,9 @@ public class ListaService {
 		}
 	}
 
-	//@StreamListener(target = Sink.INPUT)
-	public void removeConteudo(/*@Payload*/ int userId, /*@Payload*/ int tipoLista, /*@Payload*/ long idConteudo) {
+	// @StreamListener(target = Sink.INPUT)
+	public void removeConteudo(/* @Payload */ int userId, /* @Payload */ int tipoLista,
+			/* @Payload */ long idConteudo) {
 
 		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 

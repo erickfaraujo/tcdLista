@@ -21,6 +21,12 @@ public class TipoLista {
 	public TipoLista() {
 		super();
 	}
+	
+	public TipoLista(int id) {
+		super();
+		
+		this.id = id;
+	}
 
 	public int getId() {
 		return id;
