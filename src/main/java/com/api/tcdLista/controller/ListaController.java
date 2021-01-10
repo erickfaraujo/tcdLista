@@ -53,15 +53,15 @@ public class ListaController {
 		return listaService.getListaByTipo(userId, tipoLista);
 	}
 	
-	@ApiOperation(value = "Adiciona um conteúdo em uma lista")
-	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void adicionaConteudo(@RequestBody UpdateRequestModel request) {
-		listaService.adicionaConteudo(request);
-	}
-	
-	@ApiOperation(value = "Remove um conteúdo de uma lista")
-	@RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void removeConteudo(@RequestBody UpdateRequestModel request) {
-		listaService.removeConteudo(request);
-	}
+//	@ApiOperation(value = "Adiciona um conteúdo em uma lista")
+//	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+//	public void adicionaConteudo(@RequestBody UpdateRequestModel request) {
+//		listaService.adicionaConteudo(request);
+//	}
+//	
+//	@ApiOperation(value = "Remove um conteúdo de uma lista")
+//	@RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+//	public void removeConteudo(@RequestBody UpdateRequestModel request) {
+//		listaService.removeConteudo(request);
+//	}
 }

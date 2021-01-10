@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.api.tcdLista.exception.ConteudoAlreadyExistsException;
@@ -17,9 +18,11 @@ import com.api.tcdLista.model.TipoLista;
 import com.api.tcdLista.model.UpdateRequestModel;
 import com.api.tcdLista.repository.ListaConteudoRepository;
 import com.api.tcdLista.repository.ListaRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-//@EnableBinding(Sink.class)
 public class ListaService {
 
 	@Autowired
@@ -94,79 +97,105 @@ public class ListaService {
 		return listaBuscada;
 	}
 
-	// @StreamListener(target = Sink.INPUT)
-	public void adicionaConteudo(/* @Payload */ UpdateRequestModel request) {
+	@KafkaListener(topics = "listaAdd", groupId = "listaAdd")
+	public void adicionaConteudo(String requestParam) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		
+		UpdateRequestModel request;
+		try {
+			request = objectMapper.readValue(requestParam, UpdateRequestModel.class);
+			
+			if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
+					&& request.getTipoLista() < 3) {
 
-		if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
-				&& request.getTipoLista() < 3) {
+				Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
-			Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
+				if (userLists.isEmpty()) {
+					Lista novaLista1 = new Lista();
+					Lista novaLista2 = new Lista();
+					TipoLista tipo1 = new TipoLista(1);
+					TipoLista tipo2 = new TipoLista(2);
 
-			if (userLists.isEmpty()) {
-				Lista novaLista1 = new Lista();
-				Lista novaLista2 = new Lista();
-				TipoLista tipo1 = new TipoLista(1);
-				TipoLista tipo2 = new TipoLista(2);
+					novaLista1.setTipoLista(tipo1);
+					novaLista1.setUserId(request.getUserId());
+					novaLista2.setTipoLista(tipo2);
+					novaLista2.setUserId(request.getUserId());
 
-				novaLista1.setTipoLista(tipo1);
-				novaLista1.setUserId(request.getUserId());
-				novaLista2.setTipoLista(tipo2);
-				novaLista2.setUserId(request.getUserId());
+					listaRepository.save(novaLista1);
+					listaRepository.save(novaLista2);
+					userLists.add(novaLista1);
+					userLists.add(novaLista2);
+				}
 
-				listaRepository.save(novaLista1);
-				listaRepository.save(novaLista2);
-				userLists.add(novaLista1);
-				userLists.add(novaLista2);
-			}
+				for (Lista lista : userLists) {
+					if (lista.getTipoLista().getId() == request.getTipoLista()) {
+						Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+						conteudos = listaConteudoRepository.findByLista(lista);
 
-			for (Lista lista : userLists) {
-				if (lista.getTipoLista().getId() == request.getTipoLista()) {
-					Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
-					conteudos = listaConteudoRepository.findByLista(lista);
-
-					for (ListaConteudo conteudo : conteudos) {
-						if (conteudo.getIdConteudo() == request.getIdConteudo()) {
-							throw new ConteudoAlreadyExistsException();
+						for (ListaConteudo conteudo : conteudos) {
+							if (conteudo.getIdConteudo() == request.getIdConteudo()) {
+								throw new ConteudoAlreadyExistsException();
+							}
 						}
+
+						ListaConteudo listaConteudo = new ListaConteudo();
+						listaConteudo.setIdLista(lista);
+						listaConteudo.setIdConteudo(request.getIdConteudo());
+
+						conteudos.add(listaConteudo);
+
+						listaConteudoRepository.saveAll(conteudos);
+						return;
 					}
-
-					ListaConteudo listaConteudo = new ListaConteudo();
-					listaConteudo.setIdLista(lista);
-					listaConteudo.setIdConteudo(request.getIdConteudo());
-
-					conteudos.add(listaConteudo);
-
-					listaConteudoRepository.saveAll(conteudos);
-					return;
 				}
 			}
+			throw new InvalidRequestException();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		throw new InvalidRequestException();
 	}
 
-	// @StreamListener(target = Sink.INPUT)
-	public void removeConteudo(/* @Payload */ UpdateRequestModel request) {
-		if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
-				&& request.getTipoLista() < 3) {
+	@KafkaListener(topics = "listaRemove", groupId = "listaRemove")
+	public void removeConteudo(String requestParam) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		
+		UpdateRequestModel request;
+		
+		try {
+			request = objectMapper.readValue(requestParam, UpdateRequestModel.class);
+			
+			if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
+					&& request.getTipoLista() < 3) {
 
-			Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
+				Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
-			for (Lista lista : userLists) {
-				if (lista.getTipoLista().getId() == request.getTipoLista()) {
-					Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
-					conteudos = listaConteudoRepository.findByLista(lista);
+				for (Lista lista : userLists) {
+					if (lista.getTipoLista().getId() == request.getTipoLista()) {
+						Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+						conteudos = listaConteudoRepository.findByLista(lista);
 
-					for (ListaConteudo conteudo : conteudos) {
-						if (conteudo.getIdConteudo() == request.getIdConteudo()) {
-							long idListaConteudo = conteudo.getIdListaConteudo();
-							listaConteudoRepository.deleteById(idListaConteudo);
-							return;
+						for (ListaConteudo conteudo : conteudos) {
+							if (conteudo.getIdConteudo() == request.getIdConteudo()) {
+								long idListaConteudo = conteudo.getIdListaConteudo();
+								listaConteudoRepository.deleteById(idListaConteudo);
+								return;
+							}
 						}
+						throw new ConteudoNotPresentException();
 					}
-					throw new ConteudoNotPresentException();
 				}
 			}
+			throw new InvalidRequestException();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		throw new InvalidRequestException();
 	}
 }
