@@ -8,11 +8,13 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.tcdLista.model.ListaConteudoDTO;
@@ -40,25 +42,25 @@ public class ListaController {
 	}
 
 	@ApiOperation(value = "Retorna todas as listas de um usuário")
-	@GetMapping(value = "{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(path = "{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Collection<ListaConteudoDTO> getListas(@PathVariable("userId") int userId) {
 		return listaService.getListas(userId);
 	}
 
 	@ApiOperation(value = "Retorna uma lista de um tipo específico do usuário")
-	@GetMapping(value = "{userId}/{tipoLista}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(path = "{userId}/{tipoLista}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ListaConteudoDTO getListaByTipo(@PathVariable("userId") int userId, @PathVariable("tipoLista") int tipoLista) {
 		return listaService.getListaByTipo(userId, tipoLista);
 	}
 	
 	@ApiOperation(value = "Adiciona um conteúdo em uma lista")
-	@RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void adicionaConteudo(@RequestBody UpdateRequestModel request) {
 		listaService.adicionaConteudo(request);
 	}
 	
-	@ApiOperation(value = "Remove um conteúdo em uma lista")
-	@RequestMapping(value = "", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ApiOperation(value = "Remove um conteúdo de uma lista")
+	@RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public void removeConteudo(@RequestBody UpdateRequestModel request) {
 		listaService.removeConteudo(request);
 	}

@@ -6,6 +6,10 @@ import java.util.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.api.tcdLista.exception.ConteudoAlreadyExistsException;
+import com.api.tcdLista.exception.ConteudoNotPresentException;
+import com.api.tcdLista.exception.InvalidRequestException;
+import com.api.tcdLista.exception.InvalidUserException;
 import com.api.tcdLista.model.Lista;
 import com.api.tcdLista.model.ListaConteudo;
 import com.api.tcdLista.model.ListaConteudoDTO;
@@ -25,44 +29,48 @@ public class ListaService {
 	private ListaConteudoRepository listaConteudoRepository;
 
 	public Collection<ListaConteudoDTO> getListas(int userId) {
-		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 
-		// Criação dos DTOs que receberão a lista de conteúdos e tipo da lista
-		ListaConteudoDTO listaMyList = new ListaConteudoDTO();
-		listaMyList.setTipoLista(1);
-		ListaConteudoDTO listaAssistidos = new ListaConteudoDTO();
-		listaAssistidos.setTipoLista(2);
+		if (userId > 0) {
+			Collection<Lista> userLists = listaRepository.findByUserId(userId);
 
-		// Criação da lista de conteúdos
-		Collection<Long> myList = new ArrayList<Long>();
-		Collection<Long> assistidos = new ArrayList<Long>();
+			// Criação dos DTOs que receberão a lista de conteúdos e tipo da lista
+			ListaConteudoDTO listaMyList = new ListaConteudoDTO();
+			listaMyList.setTipoLista(1);
+			ListaConteudoDTO listaAssistidos = new ListaConteudoDTO();
+			listaAssistidos.setTipoLista(2);
 
-		// Criação da lista de retorno do serviço
-		Collection<ListaConteudoDTO> listaCompleta = new ArrayList<ListaConteudoDTO>();
+			// Criação da lista de conteúdos
+			Collection<Long> myList = new ArrayList<Long>();
+			Collection<Long> assistidos = new ArrayList<Long>();
 
-		for (Lista lista : userLists) {
+			// Criação da lista de retorno do serviço
+			Collection<ListaConteudoDTO> listaCompleta = new ArrayList<ListaConteudoDTO>();
 
-			// Busca o conteúdo de uma lista do usuário
-			Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
-			conteudos = listaConteudoRepository.findByLista(lista);
+			for (Lista lista : userLists) {
 
-			for (ListaConteudo listaConteudo : conteudos) {
-				if (lista.getTipoLista().getId() == 1) {
-					myList.add(listaConteudo.getIdConteudo());
+				// Busca o conteúdo de uma lista do usuário
+				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+				conteudos = listaConteudoRepository.findByLista(lista);
 
-				} else if (lista.getTipoLista().getId() == 2) {
-					assistidos.add(listaConteudo.getIdConteudo());
+				for (ListaConteudo listaConteudo : conteudos) {
+					if (lista.getTipoLista().getId() == 1) {
+						myList.add(listaConteudo.getIdConteudo());
+
+					} else if (lista.getTipoLista().getId() == 2) {
+						assistidos.add(listaConteudo.getIdConteudo());
+					}
 				}
+
+				listaMyList.setConteudos(myList);
+				listaAssistidos.setConteudos(assistidos);
 			}
 
-			listaMyList.setConteudos(myList);
-			listaAssistidos.setConteudos(assistidos);
+			listaCompleta.add(listaMyList);
+			listaCompleta.add(listaAssistidos);
+
+			return listaCompleta;
 		}
-
-		listaCompleta.add(listaMyList);
-		listaCompleta.add(listaAssistidos);
-
-		return listaCompleta;
+		throw new InvalidUserException();
 	}
 
 	public ListaConteudoDTO getListaByTipo(int userId, int tipoLista) {
@@ -89,59 +97,76 @@ public class ListaService {
 	// @StreamListener(target = Sink.INPUT)
 	public void adicionaConteudo(/* @Payload */ UpdateRequestModel request) {
 
-		Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
+		if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
+				&& request.getTipoLista() < 3) {
 
-		if (userLists.isEmpty()) {
-			Lista novaLista1 = new Lista();
-			Lista novaLista2 = new Lista();
-			TipoLista tipo1 = new TipoLista(1);
-			TipoLista tipo2 = new TipoLista(2);
+			Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
-			novaLista1.setTipoLista(tipo1);
-			novaLista1.setUserId(request.getUserId());
-			novaLista2.setTipoLista(tipo2);
-			novaLista2.setUserId(request.getUserId());
+			if (userLists.isEmpty()) {
+				Lista novaLista1 = new Lista();
+				Lista novaLista2 = new Lista();
+				TipoLista tipo1 = new TipoLista(1);
+				TipoLista tipo2 = new TipoLista(2);
 
-			listaRepository.save(novaLista1);
-			listaRepository.save(novaLista2);
-			userLists.add(novaLista1);
-			userLists.add(novaLista2);
-		}
+				novaLista1.setTipoLista(tipo1);
+				novaLista1.setUserId(request.getUserId());
+				novaLista2.setTipoLista(tipo2);
+				novaLista2.setUserId(request.getUserId());
 
-		for (Lista lista : userLists) {
-			if (lista.getTipoLista().getId() == request.getTipoLista()) {
-				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
-				conteudos = listaConteudoRepository.findByLista(lista);
+				listaRepository.save(novaLista1);
+				listaRepository.save(novaLista2);
+				userLists.add(novaLista1);
+				userLists.add(novaLista2);
+			}
 
-				ListaConteudo listaConteudo = new ListaConteudo();
-				listaConteudo.setIdLista(lista);
-				listaConteudo.setIdConteudo(request.getIdConteudo());
+			for (Lista lista : userLists) {
+				if (lista.getTipoLista().getId() == request.getTipoLista()) {
+					Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+					conteudos = listaConteudoRepository.findByLista(lista);
 
-				conteudos.add(listaConteudo);
+					for (ListaConteudo conteudo : conteudos) {
+						if (conteudo.getIdConteudo() == request.getIdConteudo()) {
+							throw new ConteudoAlreadyExistsException();
+						}
+					}
 
-				listaConteudoRepository.saveAll(conteudos);
+					ListaConteudo listaConteudo = new ListaConteudo();
+					listaConteudo.setIdLista(lista);
+					listaConteudo.setIdConteudo(request.getIdConteudo());
+
+					conteudos.add(listaConteudo);
+
+					listaConteudoRepository.saveAll(conteudos);
+					return;
+				}
 			}
 		}
+		throw new InvalidRequestException();
 	}
 
 	// @StreamListener(target = Sink.INPUT)
 	public void removeConteudo(/* @Payload */ UpdateRequestModel request) {
+		if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
+				&& request.getTipoLista() < 3) {
 
-		Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
+			Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
-		for (Lista lista : userLists) {
-			if (lista.getTipoLista().getId() == request.getTipoLista()) {
-				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
-				conteudos = listaConteudoRepository.findByLista(lista);
+			for (Lista lista : userLists) {
+				if (lista.getTipoLista().getId() == request.getTipoLista()) {
+					Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
+					conteudos = listaConteudoRepository.findByLista(lista);
 
-				for (ListaConteudo conteudo : conteudos) {
-					if (conteudo.getIdConteudo() == request.getIdConteudo()) {
-						long idListaConteudo = conteudo.getIdListaConteudo();
-						listaConteudoRepository.deleteById(idListaConteudo);
-						break;
+					for (ListaConteudo conteudo : conteudos) {
+						if (conteudo.getIdConteudo() == request.getIdConteudo()) {
+							long idListaConteudo = conteudo.getIdListaConteudo();
+							listaConteudoRepository.deleteById(idListaConteudo);
+							return;
+						}
 					}
+					throw new ConteudoNotPresentException();
 				}
 			}
 		}
+		throw new InvalidRequestException();
 	}
 }
