@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.cloud.stream.messaging.Sink;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import com.api.tcdLista.model.Lista;
 import com.api.tcdLista.model.ListaConteudo;
 import com.api.tcdLista.model.ListaConteudoDTO;
 import com.api.tcdLista.model.TipoLista;
+import com.api.tcdLista.model.UpdateRequestModel;
 import com.api.tcdLista.repository.ListaConteudoRepository;
 import com.api.tcdLista.repository.ListaRepository;
 
@@ -90,10 +87,9 @@ public class ListaService {
 	}
 
 	// @StreamListener(target = Sink.INPUT)
-	public void adicionaConteudo(/* @Payload */ int userId, /* @Payload */ int tipoLista,
-			/* @Payload */ long idConteudo) {
+	public void adicionaConteudo(/* @Payload */ UpdateRequestModel request) {
 
-		Collection<Lista> userLists = listaRepository.findByUserId(userId);
+		Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
 		if (userLists.isEmpty()) {
 			Lista novaLista1 = new Lista();
@@ -102,9 +98,9 @@ public class ListaService {
 			TipoLista tipo2 = new TipoLista(2);
 
 			novaLista1.setTipoLista(tipo1);
-			novaLista1.setUserId(userId);
+			novaLista1.setUserId(request.getUserId());
 			novaLista2.setTipoLista(tipo2);
-			novaLista2.setUserId(userId);
+			novaLista2.setUserId(request.getUserId());
 
 			listaRepository.save(novaLista1);
 			listaRepository.save(novaLista2);
@@ -113,13 +109,13 @@ public class ListaService {
 		}
 
 		for (Lista lista : userLists) {
-			if (lista.getTipoLista().getId() == tipoLista) {
+			if (lista.getTipoLista().getId() == request.getTipoLista()) {
 				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
 				conteudos = listaConteudoRepository.findByLista(lista);
 
 				ListaConteudo listaConteudo = new ListaConteudo();
 				listaConteudo.setIdLista(lista);
-				listaConteudo.setIdConteudo(idConteudo);
+				listaConteudo.setIdConteudo(request.getIdConteudo());
 
 				conteudos.add(listaConteudo);
 
@@ -129,18 +125,17 @@ public class ListaService {
 	}
 
 	// @StreamListener(target = Sink.INPUT)
-	public void removeConteudo(/* @Payload */ int userId, /* @Payload */ int tipoLista,
-			/* @Payload */ long idConteudo) {
+	public void removeConteudo(/* @Payload */ UpdateRequestModel request) {
 
-		Collection<Lista> userLists = listaRepository.findByUserId(userId);
+		Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
 		for (Lista lista : userLists) {
-			if (lista.getTipoLista().getId() == tipoLista) {
+			if (lista.getTipoLista().getId() == request.getTipoLista()) {
 				Collection<ListaConteudo> conteudos = new ArrayList<ListaConteudo>();
 				conteudos = listaConteudoRepository.findByLista(lista);
 
 				for (ListaConteudo conteudo : conteudos) {
-					if (conteudo.getIdConteudo() == idConteudo) {
+					if (conteudo.getIdConteudo() == request.getIdConteudo()) {
 						long idListaConteudo = conteudo.getIdListaConteudo();
 						listaConteudoRepository.deleteById(idListaConteudo);
 						break;

@@ -10,12 +10,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.api.tcdLista.model.ListaConteudo;
 import com.api.tcdLista.model.ListaConteudoDTO;
+import com.api.tcdLista.model.UpdateRequestModel;
 import com.api.tcdLista.service.ListaService;
 
 import io.swagger.annotations.Api;
@@ -52,13 +53,13 @@ public class ListaController {
 	
 	@ApiOperation(value = "Adiciona um conteúdo em uma lista")
 	@RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void adicionaConteudo(int userId, int tipoLista, long idConteudo) {
-		listaService.adicionaConteudo(userId, tipoLista, idConteudo);
+	public void adicionaConteudo(@RequestBody UpdateRequestModel request) {
+		listaService.adicionaConteudo(request);
 	}
 	
 	@ApiOperation(value = "Remove um conteúdo em uma lista")
 	@RequestMapping(value = "", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public void removeConteudo(int userId, int tipoLista, long idConteudo) {
-		listaService.removeConteudo(userId, tipoLista, idConteudo);
+	public void removeConteudo(@RequestBody UpdateRequestModel request) {
+		listaService.removeConteudo(request);
 	}
 }
