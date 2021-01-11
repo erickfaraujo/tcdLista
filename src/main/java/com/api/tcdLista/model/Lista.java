@@ -23,6 +23,17 @@ public class Lista {
 	@ManyToOne
 	@JoinColumn(name = "id_tipo_lista", nullable = false)
 	private TipoLista tipoLista;
+	
+	public Lista() {
+		super();
+	}
+	
+	public Lista(int userId, TipoLista tipoLista) {
+		super();
+		
+		this.userId = userId;
+		this.tipoLista = tipoLista;	
+	}
 
 	public Long getId() {
 		return id;

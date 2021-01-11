@@ -8,17 +8,13 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.tcdLista.model.ListaConteudoDTO;
-import com.api.tcdLista.model.UpdateRequestModel;
 import com.api.tcdLista.service.ListaService;
 
 import io.swagger.annotations.Api;
@@ -52,16 +48,4 @@ public class ListaController {
 	public ListaConteudoDTO getListaByTipo(@PathVariable("userId") int userId, @PathVariable("tipoLista") int tipoLista) {
 		return listaService.getListaByTipo(userId, tipoLista);
 	}
-	
-//	@ApiOperation(value = "Adiciona um conteúdo em uma lista")
-//	@RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-//	public void adicionaConteudo(@RequestBody UpdateRequestModel request) {
-//		listaService.adicionaConteudo(request);
-//	}
-//	
-//	@ApiOperation(value = "Remove um conteúdo de uma lista")
-//	@RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-//	public void removeConteudo(@RequestBody UpdateRequestModel request) {
-//		listaService.removeConteudo(request);
-//	}
 }

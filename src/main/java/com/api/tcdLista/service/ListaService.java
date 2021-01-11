@@ -41,10 +41,13 @@ public class ListaService {
 			listaMyList.setTipoLista(1);
 			ListaConteudoDTO listaAssistidos = new ListaConteudoDTO();
 			listaAssistidos.setTipoLista(2);
+			ListaConteudoDTO listaCurtidos = new ListaConteudoDTO();
+			listaCurtidos.setTipoLista(3);
 
 			// Criação da lista de conteúdos
 			Collection<Long> myList = new ArrayList<Long>();
 			Collection<Long> assistidos = new ArrayList<Long>();
+			Collection<Long> curtidos = new ArrayList<Long>();
 
 			// Criação da lista de retorno do serviço
 			Collection<ListaConteudoDTO> listaCompleta = new ArrayList<ListaConteudoDTO>();
@@ -61,15 +64,20 @@ public class ListaService {
 
 					} else if (lista.getTipoLista().getId() == 2) {
 						assistidos.add(listaConteudo.getIdConteudo());
+
+					} else if (lista.getTipoLista().getId() == 3) {
+						curtidos.add(listaConteudo.getIdConteudo());
 					}
 				}
 
 				listaMyList.setConteudos(myList);
 				listaAssistidos.setConteudos(assistidos);
+				listaCurtidos.setConteudos(curtidos);
 			}
-
+			
 			listaCompleta.add(listaMyList);
 			listaCompleta.add(listaAssistidos);
+			listaCompleta.add(listaCurtidos);
 
 			return listaCompleta;
 		}
@@ -100,31 +108,32 @@ public class ListaService {
 	@KafkaListener(topics = "listaAdd", groupId = "listaAdd")
 	public void adicionaConteudo(String requestParam) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		
+
 		UpdateRequestModel request;
 		try {
 			request = objectMapper.readValue(requestParam, UpdateRequestModel.class);
-			
+
 			if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
-					&& request.getTipoLista() < 3) {
+					&& request.getTipoLista() < 4) {
 
 				Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
 				if (userLists.isEmpty()) {
-					Lista novaLista1 = new Lista();
-					Lista novaLista2 = new Lista();
 					TipoLista tipo1 = new TipoLista(1);
 					TipoLista tipo2 = new TipoLista(2);
-
-					novaLista1.setTipoLista(tipo1);
-					novaLista1.setUserId(request.getUserId());
-					novaLista2.setTipoLista(tipo2);
-					novaLista2.setUserId(request.getUserId());
+					TipoLista tipo3 = new TipoLista(3);
+					
+					Lista novaLista1 = new Lista(request.getUserId(), tipo1);
+					Lista novaLista2 = new Lista(request.getUserId(), tipo2);
+					Lista novaLista3 = new Lista(request.getUserId(), tipo3);
 
 					listaRepository.save(novaLista1);
 					listaRepository.save(novaLista2);
+					listaRepository.save(novaLista3);
+					
 					userLists.add(novaLista1);
 					userLists.add(novaLista2);
+					userLists.add(novaLista3);
 				}
 
 				for (Lista lista : userLists) {
@@ -151,10 +160,8 @@ public class ListaService {
 			}
 			throw new InvalidRequestException();
 		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -162,14 +169,14 @@ public class ListaService {
 	@KafkaListener(topics = "listaRemove", groupId = "listaRemove")
 	public void removeConteudo(String requestParam) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		
+
 		UpdateRequestModel request;
-		
+
 		try {
 			request = objectMapper.readValue(requestParam, UpdateRequestModel.class);
-			
+
 			if (request.getUserId() > 0 && request.getIdConteudo() > 0 && request.getTipoLista() > 0
-					&& request.getTipoLista() < 3) {
+					&& request.getTipoLista() < 4) {
 
 				Collection<Lista> userLists = listaRepository.findByUserId(request.getUserId());
 
@@ -191,10 +198,8 @@ public class ListaService {
 			}
 			throw new InvalidRequestException();
 		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
