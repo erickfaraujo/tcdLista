@@ -7,7 +7,7 @@ WHERE   NOT EXISTS
         );
         
 INSERT  INTO lista_db.tipo_lista (id_tipo_lista, desricao) 
-SELECT  2, 'Assitidos'
+SELECT  2, 'Assistidos'
 WHERE   NOT EXISTS 
         (   SELECT  1
             FROM    lista_db.tipo_lista 
