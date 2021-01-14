@@ -21,6 +21,8 @@ import com.api.tcdLista.repository.ListaRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 
 @Service
 public class ListaService {
@@ -31,6 +33,7 @@ public class ListaService {
 	@Autowired
 	private ListaConteudoRepository listaConteudoRepository;
 
+	@HystrixCommand(fallbackMethod = "getListasFallback")
 	public Collection<ListaConteudoDTO> getListas(int userId) {
 
 		if (userId > 0) {
@@ -74,7 +77,7 @@ public class ListaService {
 				listaAssistidos.setConteudos(assistidos);
 				listaCurtidos.setConteudos(curtidos);
 			}
-			
+
 			listaCompleta.add(listaMyList);
 			listaCompleta.add(listaAssistidos);
 			listaCompleta.add(listaCurtidos);
@@ -84,7 +87,10 @@ public class ListaService {
 		throw new InvalidUserException();
 	}
 
+	@HystrixCommand(fallbackMethod = "getListaByTipoCB", commandProperties = {
+			@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000") })
 	public ListaConteudoDTO getListaByTipo(int userId, int tipoLista) {
+		
 		Collection<Lista> userLists = listaRepository.findByUserId(userId);
 		Collection<Long> listaConteudos = new ArrayList<Long>();
 		ListaConteudoDTO listaBuscada = new ListaConteudoDTO();
@@ -122,7 +128,7 @@ public class ListaService {
 					TipoLista tipo1 = new TipoLista(1);
 					TipoLista tipo2 = new TipoLista(2);
 					TipoLista tipo3 = new TipoLista(3);
-					
+
 					Lista novaLista1 = new Lista(request.getUserId(), tipo1);
 					Lista novaLista2 = new Lista(request.getUserId(), tipo2);
 					Lista novaLista3 = new Lista(request.getUserId(), tipo3);
@@ -130,7 +136,7 @@ public class ListaService {
 					listaRepository.save(novaLista1);
 					listaRepository.save(novaLista2);
 					listaRepository.save(novaLista3);
-					
+
 					userLists.add(novaLista1);
 					userLists.add(novaLista2);
 					userLists.add(novaLista3);
@@ -202,5 +208,25 @@ public class ListaService {
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public ListaConteudoDTO getListaByTipoCB(int userId, int tipoLista) {
+
+		ListaConteudoDTO lista = new ListaConteudoDTO();
+
+		lista.setTipoLista(0);
+		lista.setConteudos(null);
+
+		return lista;
+
+	}
+
+	public Collection<ListaConteudoDTO> getListasFallback(int userId) {
+		Collection<ListaConteudoDTO> lista = new ArrayList<ListaConteudoDTO>();
+		
+		lista.add(null);
+		
+		return lista;
+		
 	}
 }

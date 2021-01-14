@@ -6,7 +6,6 @@ public class ListaConteudoDTO {
 
 	private int tipoLista;
 	private Collection<Long> conteudos;
-	//private Collection<Long> assistidos;
 
 	public Collection<Long> getConteudos() {
 		return conteudos;
