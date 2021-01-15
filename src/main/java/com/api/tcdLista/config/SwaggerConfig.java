@@ -22,7 +22,7 @@ public class SwaggerConfig extends WebMvcConfigurationSupport {
 	}
 
 	private ApiInfo metaData() {
-		return new ApiInfoBuilder().title("API de Listas")
+		return new ApiInfoBuilder().title("API Listas")
 				.description("\"API para gerenciamento de listas Netflix\"").version("1.0.0").build();
 	}
 
